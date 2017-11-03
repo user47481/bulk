@@ -74,7 +74,7 @@ class NotifierAction extends Action
 
         $template = NotifierTemplates::find()->localized($lang)->where(['id'=>$this->_templateID]);
 
-        if($template->label === 'Форма посетителя [EN]' || $template->label === 'Форма посетителя'){
+        if($template->label === 'Форма посетителя'){
 
             str_replace( '{{$ticket_url}}', $model->pdfPath, $template->message );
 

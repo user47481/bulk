@@ -10,6 +10,7 @@ namespace bulk\actions;
 
 
 use common\components\MainModel;
+use common\models\Domains;
 use common\models\PeopleForms;
 use kartik\mpdf\Pdf;
 use yii\base\Action;
@@ -30,12 +31,13 @@ class SendTicketAction extends Action
 
     public function run(){
        foreach ($this->prepareModels()->all() as $model){
-
+           $lang = Domains::find()->where(['id'=>$model->domain_id])->one()->language;
            if($model->is_ticket_send === 0){
-               $send = \Yii::$app->mailer->compose('@backend/views/emails/ticket',['model'=>$model])
-                   ->setFrom('no-reply@mhe.su')
-                   ->setTo($model->email)
-                   ->setSubject(\Yii::t('membership','Билет участника'))
+
+               $send = \Yii::$app->mailer->compose('@backend/views/emails/ticket',['lang'=>$lang])
+                   ->setFrom('info@mhe.su')
+                   ->setTo(str_replace('"','',$model->email))
+                   ->setSubject('Билет участника')
                    ->attach($this->generateTicket($model->id))
                ;
                if($send->send()){

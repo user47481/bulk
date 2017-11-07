@@ -20,10 +20,10 @@ class BulkDrop extends Widget
 
     public $bulk_id = 'bulk-actions';
     public $bulk_data_attr = 'data-action';
-    public $bulk_checkbox_selector_checked = 'kv-row-checkbox:checkbox:checked';
-    public $bulk_checkbox_selector = 'kv-row-checkbox';
-    public $bulk_check_all_selector = 'select-on-check-all';
-    public $bulk_check_all_selector_checked = 'select-on-check-all:checkbox:checked';
+    public $bulk_checkbox_selector_checked = '.kv-row-checkbox:checkbox:checked';
+    public $bulk_checkbox_selector = '.kv-row-checkbox';
+    public $bulk_check_all_selector = '.select-on-check-all';
+    public $bulk_check_all_selector_checked = '.select-on-check-all:checkbox:checked';
     public $bulk_post_param = 'selection';
     public $bulk_option_attr = 'data-action';
 
@@ -59,32 +59,35 @@ class BulkDrop extends Widget
 
     public function registerScript(){
         $this->getView()->registerJs("
-            $('.{$this->bulk_checkbox_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
-            $('.{$this->bulk_check_all_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
+        
+            $('{$this->bulk_checkbox_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
+            $('{$this->bulk_check_all_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
             
-            $('.{$this->bulk_check_all_selector}').on('ifChecked', function(event){
-                $(document).find('.{$this->bulk_checkbox_selector}').iCheck('check')
+            $('{$this->bulk_check_all_selector}').on('ifChecked', function(event){
+                $(document).find('{$this->bulk_checkbox_selector}').iCheck('check')
             });
             
-            $('.{$this->bulk_check_all_selector}').on('ifUnchecked', function(event){
-                $(document).find('.{$this->bulk_checkbox_selector}').iCheck('uncheck')
+            $('{$this->bulk_check_all_selector}').on('ifUnchecked', function(event){
+                $(document).find('{$this->bulk_checkbox_selector}').iCheck('uncheck')
             });
             
             
             
-            $('.{$this->bulk_checkbox_selector}').on('ifToggled', function(event){
-                 if($(document).find('.{$this->bulk_checkbox_selector_checked}:checked').length == 0){
+            $('{$this->bulk_checkbox_selector}').on('ifToggled', function(event){
+                 if($(document).find('{$this->bulk_checkbox_selector_checked}:checked').length == 0){
                      $('#{$this->bulk_id}').attr('disabled','disabled');
                  }else{
                      $('#{$this->bulk_id}').removeAttr('disabled');
                  }
             });
-        ",View::POS_END,'ch-1');
+        ",View::POS_END,$this->bulk_id);
+
+
         $this->getView()->registerJs("
             $('#{$this->bulk_id}').on('change',function(){
                 var action = $(this).find(':selected').attr('{$this->bulk_data_attr}');
                 var ids = [];
-                $('.{$this->bulk_checkbox_selector_checked}').each(function () {
+                $('{$this->bulk_checkbox_selector_checked}').each(function () {
                     ids.push($(this).val());
                 });
                 $.post( action, {bulk:ids} )
@@ -97,7 +100,7 @@ class BulkDrop extends Widget
                     
                 console.log(ids);
             })
-        ",View::POS_END);
+        ",View::POS_END,$this->bulk_id.'_ads');
     }
 
     private function prepareOptionsArray(){

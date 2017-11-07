@@ -18,6 +18,8 @@ class DeleteAction extends Action
 {
     public $attribute = 'bulk';
 
+    public $modelClass;
+
     private $_ids;
 
     public function __construct($id, Controller $controller, array $config = [])
@@ -41,7 +43,12 @@ class DeleteAction extends Action
     }
 
     private function prepareModels(){
-        $class = $this->controller->getModelClass();
+        if($this->modelClass){
+            $class = $this->modelClass;
+        }else{
+            $class = $this->controller->getModelClass();
+        }
+
         $searcher = new $class;
         return $searcher::find()->filterWhere(['in','id',$this->_ids]);
     }

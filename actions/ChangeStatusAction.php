@@ -18,6 +18,8 @@ class ChangeStatusAction extends Action
 {
     public $attribute = 'bulk';
 
+    public $modelClass;
+
     private $_ids;
 
     public function __construct($id, Controller $controller, array $config = [])
@@ -52,7 +54,11 @@ class ChangeStatusAction extends Action
     }
 
     private function prepareModels(){
-        $class = $this->controller->getModelClass();
+        if($this->modelClass){
+            $class = $this->modelClass;
+        }else{
+            $class = $this->controller->getModelClass();
+        }
         $searcher = new $class;
         return $searcher::find()->andFilterWhere(['in','id',$this->_ids]);
     }

@@ -77,7 +77,7 @@ class NotifierAction extends Action
      */
     public function loadTemplate($model, $lang){
 
-        $template = NotifierTemplates::find()->localized($lang)->where(['id'=>$this->_templateID]);
+        $template = NotifierTemplates::find()->localized($lang)->where(['id'=>$this->_templateID])->one();
 
         if($template->label === 'Форма посетителя'){
 

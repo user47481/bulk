@@ -15,6 +15,7 @@ use notifier\models\db\NotifierTemplates;
 use yii\base\Action;
 use yii\db\ActiveRecord;
 use yii\web\Controller;
+use Yii;
 /**
  * Class NotifierAction
  * @package bulk\actions
@@ -48,7 +49,7 @@ class NotifierAction extends Action
     {
         parent::init();
         $this->_templateID = $_GET['template'];
-        $this->setIds(\Yii::$app->request->post($this->attribute));
+        $this->_ids = $this->preparePost();
     }
 
     /**
@@ -92,19 +93,23 @@ class NotifierAction extends Action
     }
 
     /**
-     * @param $value
-     */
-    private function setIds($value){
-        $this->_ids = $value;
-    }
-
-    /**
      * @return mixed
      */
     private function prepareModels(){
         $class = $this->controller->getModelClass();
         $searcher = new $class;
         return $searcher::find()->andFilterWhere(['in','id',$this->_ids]);
+    }
+
+    private function paramsGuard(){
+        if(is_null(\Yii::$app->request->post($this->attribute))){
+            throw new \Exception('Айди моделей на удаление не переданы');
+        }
+    }
+
+    private function preparePost(){
+        $this->paramsGuard();
+        return Yii::$app->request->post($this->attribute);
     }
 
 }

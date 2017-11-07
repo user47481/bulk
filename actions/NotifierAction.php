@@ -58,10 +58,16 @@ class NotifierAction extends Action
         foreach ($this->prepareModels()->all() as $model){
             /* @var $model MainModel */
             $service = new SendHelper(new HistoryHelper(), $this->loadTemplate($model,$model->language));
-            if($service->send($model)){
+            $sms = $service->send($model);
+            s($sms);
+            exit;
+            if($sms){
                 $model->detachBehaviors();
                 $model->is_sms_send = 1;
                 $model->update(false);
+            }else{
+                return s($sms,$service);
+                exit;
             }
 
         }
@@ -79,10 +85,8 @@ class NotifierAction extends Action
 
         $template = NotifierTemplates::find()->localized($lang)->where(['id'=>$this->_templateID])->one();
 
-        if($template->label === 'Форма посетителя'){
-
-            str_replace( '{{$ticket_url}}', $model->pdfPath, $template->message );
-
+        if($template->label == 'Форма посетителя'){
+            $template->message = str_replace( '{{$ticket_url}}', $model->pdfPath, $template->message );
         }
 
         return $template;

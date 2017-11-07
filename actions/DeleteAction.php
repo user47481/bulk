@@ -35,6 +35,7 @@ class DeleteAction extends Action
     }
 
     public function run(){
+
         foreach ($this->prepareModels()->all() as $model){
             /* @var $model MainModel */
             $model->delete();

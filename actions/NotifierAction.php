@@ -56,25 +56,23 @@ class NotifierAction extends Action
      */
     public function run(){
         foreach ($this->prepareModels()->all() as $model){
-            /* @var $model MainModel */
-            $service = new SendHelper(new HistoryHelper(), $this->loadTemplate($model,$model->language));
-            $sms = $service->send($model);
-            s($sms);
-            exit;
-            if($sms){
-                $model->detachBehaviors();
-                $model->is_sms_send = 1;
-                $model->update(false);
-            }else{
-                return s($sms,$service);
-                exit;
+            if($model->is_sms_send !== 1){
+                /* @var $model MainModel */
+                $service = new SendHelper(new HistoryHelper(), $this->loadTemplate($model,$model->language));
+                $sms = $service->send($model);
+                if($sms->code == '100'){
+                    $model->detachBehaviors();
+                    $model->updateAttributes(['is_sms_send'=>1]);
+                }else{
+                    return s($sms->code,$sms);
+                    exit;
+                }
             }
-
         }
-
-
-        return $this->prepareModels()->count();
     }
+
+
+
 
     /**
      * @param $model MainModel

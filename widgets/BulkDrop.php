@@ -59,48 +59,110 @@ class BulkDrop extends Widget
 
     public function registerScript(){
         $this->getView()->registerJs("
-        
-            $('{$this->bulk_checkbox_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
-            $('{$this->bulk_check_all_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
-            
-            $('{$this->bulk_check_all_selector}').on('ifChecked', function(event){
-                $(document).find('{$this->bulk_checkbox_selector}').iCheck('check')
-            });
-            
-            $('{$this->bulk_check_all_selector}').on('ifUnchecked', function(event){
-                $(document).find('{$this->bulk_checkbox_selector}').iCheck('uncheck')
-            });
-            
-            
-            
-            $('{$this->bulk_checkbox_selector}').on('ifToggled', function(event){
-                 if($(document).find('{$this->bulk_checkbox_selector_checked}:checked').length == 0){
-                     $('#{$this->bulk_id}').attr('disabled','disabled');
-                 }else{
-                     $('#{$this->bulk_id}').removeAttr('disabled');
-                 }
-            });
-        ",View::POS_END,$this->bulk_id);
+                 function init(){
+    alertify.defaults.transition = 'slide';
+    alertify.defaults.theme.ok = 'btn btn-primary';
+    alertify.defaults.theme.cancel = 'btn btn-danger';
+    alertify.defaults.theme.input = 'form-control';
+    alertify.defaults.glossary.ok = 'Да';
+    alertify.defaults.glossary.cancel = 'Отменить';
 
+    $('{$this->bulk_checkbox_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
+    $('{$this->bulk_check_all_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
+    $('{$this->bulk_check_all_selector}').on('ifChecked', function(event){
+        $(document).find('{$this->bulk_checkbox_selector}').iCheck('check')
+    });
 
-        $this->getView()->registerJs("
-            $('#{$this->bulk_id}').on('change',function(){
-                var action = $(this).find(':selected').attr('{$this->bulk_data_attr}');
-                var ids = [];
-                $('{$this->bulk_checkbox_selector_checked}').each(function () {
-                    ids.push($(this).val());
-                });
-                $.post( action, {bulk:ids} )
+    $('{$this->bulk_check_all_selector}').on('ifUnchecked', function(event){
+        $(document).find('{$this->bulk_checkbox_selector}').iCheck('uncheck')
+    });
+
+    $('{$this->bulk_checkbox_selector}').on('ifToggled', function(event){
+        if($(document).find('{$this->bulk_checkbox_selector_checked}:checked').length == 0){
+            $('#{$this->bulk_id}').attr('disabled','disabled');
+        }else{
+            $('#{$this->bulk_id}').removeAttr('disabled');
+        }
+    });
+}
+
+init();
+bulkChange();
+
+$(document).on('ready pjax:end', function(event) {
+    init();
+    bulkChange();
+});
+function showConfirm(){
+
+    alertify.confirm(
+        'Подтвердите действие | '+actionOptGroupTitle+' | -> | '+actionTitle+' |',
+        'Выбрано: '+ ids.length+' ед. '+' Вы уверены?',
+        function(){
+            alertify.success('Запрос отправлен');
+            $.post( action, {bulk:ids} )
                 .done(function() {
-                    location.reload();
+                    $.pjax.reload('#pjax-id');
+                    alertify.success('Запрос выполнен успешно');
                 })
                 .fail(function() {
-                    alert( 'Ошибка - смотрите в консоль XHR запросы' );
-                }); 
-                    
-                console.log(ids);
+                    alertify.success('Ошибка - смотрите в консоль XHR запросы');
+                });
+        },
+        function(){
+            $('#{$this->bulk_id}').prop('selectedIndex',0);
+            alertify.error('Действие отменено')
+        }
+    );
+
+}
+
+function showTemplates(){
+    alertify.confirm(
+        'Выберите шаблон рассылки',
+        'Выберите шаблон'
+    ,
+    function(){
+        alertify.success('Запрос отправлен');
+        $.post( action, {bulk:ids} )
+            .done(function() {
+                $.pjax.reload('#pjax-id');
+                alertify.success('Запрос выполнен успешно');
             })
-        ",View::POS_END,$this->bulk_id.'_ads');
+            .fail(function() {
+                alertify.success('Ошибка - смотрите в консоль XHR запросы');
+            });
+    },
+    function(){
+        $('#{$this->bulk_id}').prop('selectedIndex',0);
+        alertify.error('Действие отменено')
+    }
+    
+    );
+}
+function bulkChange(){
+    $('#{$this->bulk_id}').on('change',function(){
+
+        var action = $(this).find(':selected').attr('{$this->bulk_data_attr}'),
+            actionTitle = $('#{$this->bulk_id} option:selected').text(),
+            actionOptGroupTitle = $('#{$this->bulk_id} option:selected').parent().attr('label'),
+            ids = []
+            ;
+
+        $('{$this->bulk_checkbox_selector_checked}').each(function () {
+            ids.push($(this).val());
+        });
+
+
+        if(action == '/backend/web/peopleform/default/notifier?template=1'){
+            console.log('sms');
+            showTemplates();
+        }else{
+            showConfirm();
+        }
+    });
+}
+        ",View::POS_END,$this->bulk_id);
     }
 
     private function prepareOptionsArray(){
@@ -127,3 +189,6 @@ class BulkDrop extends Widget
 
 
 }
+
+
+

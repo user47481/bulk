@@ -57,7 +57,7 @@ class NotifierAction extends Action
      */
     public function run(){
         foreach ($this->prepareModels()->all() as $model){
-            if($model->is_sms_send !== 1){
+            //if($model->is_sms_send !== 1){
                 /* @var $model MainModel */
                 $service = new SendHelper(new HistoryHelper(), $this->loadTemplate($model,$model->language));
                 $sms = $service->send($model);
@@ -68,7 +68,7 @@ class NotifierAction extends Action
                     return s($sms->code,$sms);
                     exit;
                 }
-            }
+            //}
         }
     }
 

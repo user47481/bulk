@@ -32,7 +32,7 @@ class SendTicketAction extends Action
     public function run(){
        foreach ($this->prepareModels()->all() as $model){
            $lang = Domains::find()->where(['id'=>$model->domain_id])->one()->language;
-           if($model->is_ticket_send === 0){
+          // if($model->is_ticket_send === 0){
 
                $send = \Yii::$app->mailer->compose('@backend/views/emails/ticket',['lang'=>$lang])
                    ->setFrom('info@mhe.su')
@@ -46,7 +46,7 @@ class SendTicketAction extends Action
                    $model->is_ticket_send = 1;
                    $model->update();
                }
-           }
+         //  }
 
         }
         return $this->prepareModels()->count();

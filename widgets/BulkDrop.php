@@ -93,9 +93,24 @@ $(document).on('ready pjax:end', function(event) {
     init();
     bulkChange();
 });
-function showConfirm(){
 
-    alertify.confirm(
+
+
+function bulkChange(){
+    $('#{$this->bulk_id}').on('change',function(){
+
+        var action = $(this).find(':selected').attr('{$this->bulk_data_attr}'),
+            actionTitle = $('#{$this->bulk_id} option:selected').text(),
+            actionOptGroupTitle = $('#{$this->bulk_id} option:selected').parent().attr('label'),
+            ids = []
+            ;
+
+        $('{$this->bulk_checkbox_selector_checked}').each(function () {
+            ids.push($(this).val());
+        });
+
+
+        alertify.confirm(
         'Подтвердите действие | '+actionOptGroupTitle+' | -> | '+actionTitle+' |',
         'Выбрано: '+ ids.length+' ед. '+' Вы уверены?',
         function(){
@@ -114,52 +129,6 @@ function showConfirm(){
             alertify.error('Действие отменено')
         }
     );
-
-}
-
-function showTemplates(){
-    alertify.confirm(
-        'Выберите шаблон рассылки',
-        'Выберите шаблон'
-    ,
-    function(){
-        alertify.success('Запрос отправлен');
-        $.post( action, {bulk:ids} )
-            .done(function() {
-                $.pjax.reload('#pjax-id');
-                alertify.success('Запрос выполнен успешно');
-            })
-            .fail(function() {
-                alertify.success('Ошибка - смотрите в консоль XHR запросы');
-            });
-    },
-    function(){
-        $('#{$this->bulk_id}').prop('selectedIndex',0);
-        alertify.error('Действие отменено')
-    }
-    
-    );
-}
-function bulkChange(){
-    $('#{$this->bulk_id}').on('change',function(){
-
-        var action = $(this).find(':selected').attr('{$this->bulk_data_attr}'),
-            actionTitle = $('#{$this->bulk_id} option:selected').text(),
-            actionOptGroupTitle = $('#{$this->bulk_id} option:selected').parent().attr('label'),
-            ids = []
-            ;
-
-        $('{$this->bulk_checkbox_selector_checked}').each(function () {
-            ids.push($(this).val());
-        });
-
-
-        if(action == '/backend/web/peopleform/default/notifier?template=1'){
-            console.log('sms');
-            showTemplates();
-        }else{
-            showConfirm();
-        }
     });
 }
         ",View::POS_END,$this->bulk_id);

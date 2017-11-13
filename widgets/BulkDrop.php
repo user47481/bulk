@@ -19,6 +19,7 @@ class BulkDrop extends Widget
     public $model;
 
     public $bulk_id = 'bulk-actions';
+    public $pjaxID = 'pjax-id';
     public $bulk_data_attr = 'data-action';
     public $bulk_checkbox_selector_checked = '.kv-row-checkbox:checkbox:checked';
     public $bulk_checkbox_selector = '.kv-row-checkbox';
@@ -57,9 +58,14 @@ class BulkDrop extends Widget
         $this->prepareOptionsAttrArray();
     }
 
+    private function getUniqueID(){
+        return str_replace('-','',$this->bulk_id);
+    }
+
     public function registerScript(){
+        $uniq = $this->getUniqueID();
         $this->getView()->registerJs("
-                 function init(){
+                 function init{$this->getUniqueID()}(){
     alertify.defaults.transition = 'slide';
     alertify.defaults.theme.ok = 'btn btn-primary';
     alertify.defaults.theme.cancel = 'btn btn-danger';
@@ -69,6 +75,7 @@ class BulkDrop extends Widget
 
     $('{$this->bulk_checkbox_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
     $('{$this->bulk_check_all_selector}').iCheck({checkboxClass: 'icheckbox_square-aero'});
+    
     $('{$this->bulk_check_all_selector}').on('ifChecked', function(event){
         $(document).find('{$this->bulk_checkbox_selector}').iCheck('check')
     });
@@ -86,17 +93,17 @@ class BulkDrop extends Widget
     });
 }
 
-init();
-bulkChange();
+init{$this->getUniqueID()}();
+bulkChange{$this->getUniqueID()}();
 
 $(document).on('ready pjax:end', function(event) {
-    init();
-    bulkChange();
+    init{$this->getUniqueID()}();
+    bulkChange{$this->getUniqueID()}();
 });
 
 
 
-function bulkChange(){
+function bulkChange{$this->getUniqueID()}(){
     $('#{$this->bulk_id}').on('change',function(){
 
         var action = $(this).find(':selected').attr('{$this->bulk_data_attr}'),
@@ -117,7 +124,8 @@ function bulkChange(){
             alertify.success('Запрос отправлен');
             $.post( action, {bulk:ids} )
                 .done(function() {
-                    $.pjax.reload('#pjax-id');
+                    console.log('done');
+                    $.pjax.reload('#{$this->pjaxID}');
                     alertify.success('Запрос выполнен успешно');
                 })
                 .fail(function() {

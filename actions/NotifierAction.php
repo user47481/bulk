@@ -9,6 +9,7 @@
 namespace bulk\actions;
 
 use common\components\MainModel;
+use common\models\Domains;
 use notifier\helpers\HistoryHelper;
 use notifier\helpers\SendHelper;
 use notifier\models\db\NotifierTemplates;
@@ -59,7 +60,8 @@ class NotifierAction extends Action
         foreach ($this->prepareModels()->all() as $model){
             //if($model->is_sms_send !== 1){
                 /* @var $model MainModel */
-                $service = new SendHelper(new HistoryHelper(), $this->loadTemplate($model,$model->language));
+                $lang = Domains::find()->where(['id'=>$model->domain_id])->one()->language;
+                $service = new SendHelper(new HistoryHelper(), $this->loadTemplate($model,$lang));
                 $sms = $service->send($model);
                 if($sms->code == '100'){
                     $model->detachBehaviors();
